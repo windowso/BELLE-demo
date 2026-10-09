@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="BELLE: Bayesian evidential learning with language modelling for Text-to-Speech.">
+  <meta name="keywords" content="Bayesian, Evidential Learning, Speech Synthesis, TTS, Uncertainty">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BELLE — Bayesian Evidential Learning with Language Modelling</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-soft: #fafafa;
+      --bg-card: #f7f7f8;
+      --ink: #0a0a0a;
+      --ink-2: #1f2024;
+      --ink-soft: #4a4d55;
+      --ink-mute: #8a8e96;
+      --line: #e5e7ea;
+      --line-soft: #eef0f2;
+      --accent: #2451e6;
+      --accent-soft: #eaf0ff;
+      --max: 1100px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      letter-spacing: -0.005em;
+    }
+
+    .container {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* ============== TOP BAR ============== */
+    .topbar {
+      border-bottom: 1px solid var(--line);
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: saturate(180%) blur(8px);
+    }
+    .topbar-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-mute);
+      letter-spacing: 0.04em;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .brand-mark {
+      width: 18px;
+      height: 18px;
+      border: 1.5px solid var(--ink);
+      border-radius: 4px;
+      position: relative;
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      background: var(--accent);
+      border-radius: 1.5px;
+    }
+    .top-meta { display: flex; gap: 22px; }
+    .top-meta a { color: var(--ink-mute); text-decoration: none; transition: color 0.15s; }
+    .top-meta a:hover { color: var(--ink); }
+
+    /* ============== HERO ============== */
+    .hero {
+      padding: 96px 0 80px;
+      border-bottom: 1px solid var(--line);
+      position: relative;
+    }
+
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .eyebrow .dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+
+    h1.title {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: clamp(40px, 5.4vw, 64px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin: 0 0 20px 0;
+      color: var(--ink);
+      max-width: 920px;
+    }
+    h1.title .muted { color: var(--ink-mute); font-weight: 400; }
+
+    .subtitle {
+      font-size: 19px;
+      line-height: 1.5;
+      color: var(--ink-soft);
+      max-width: 720px;
+      margin: 0 0 36px 0;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 28px;
+      padding: 18px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin: 36px 0 32px 0;
+    }
+    .meta-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .meta-cell .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+    }
+    .meta-cell .value {
+      font-size: 14px;
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 500;
+      letter-spacing: -0.005em;
+      transition: all 0.18s ease;
+    }
+    .btn svg { width: 14px; height: 14px; }
+    .btn:hover {
+      border-color: var(--ink);
+      transform: translateY(-1px);
+    }
+    .btn.primary {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+    .btn.primary:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* ============== SECTIONS ============== */
+    section.block {
+      padding: 88px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    section.block:last-of-type { border-bottom: 0; }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 40px;
+      margin-bottom: 44px;
+      align-items: baseline;
+    }
+    .section-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+      padding-top: 14px;
+      border-top: 1px solid var(--ink);
+      width: fit-content;
+    }
+    h2.section-title {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: clamp(26px, 3.2vw, 38px);
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+      margin: 0;
+      color: var(--ink);
+    }
+    .section-sub {
+      grid-column: 2;
+      font-size: 16px;
+      color: var(--ink-soft);
+      margin: 12px 0 0 0;
+      max-width: 700px;
+    }
+
+    @media (max-width: 720px) {
+      .section-head { grid-template-columns: 1fr; gap: 12px; }
+      .section-sub { grid-column: 1; }
+    }
+
+    /* ============== ABSTRACT ============== */
+    .abstract-grid {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 40px;
+    }
+    .abstract-side {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-mute);
+      letter-spacing: 0.05em;
+    }
+    .kv {
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .kv:last-child { border-bottom: 1px solid var(--line); }
+    .kv .k { color: var(--ink-mute); }
+    .kv .v { color: var(--ink); font-weight: 500; }
+
+    .abstract-body {
+      font-size: 16.5px;
+      line-height: 1.72;
+      color: var(--ink-2);
+      max-width: 740px;
+    }
+    .abstract-body p { margin: 0 0 18px 0; }
+    .abstract-body p:last-child { margin-bottom: 0; }
+    .abstract-body strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+    .abstract-body em {
+      font-style: normal;
+      color: var(--accent);
+      font-weight: 500;
+      background: var(--accent-soft);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.95em;
+    }
+
+    @media (max-width: 720px) {
+      .abstract-grid { grid-template-columns: 1fr; gap: 24px; }
+    }
+
+    /* ============== FIGURE ============== */
+    .figure {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 24px;
+      background: var(--bg-card);
+      position: relative;
+    }
+    .figure::before {
+      content: attr(data-fig);
+      position: absolute;
+      top: 16px;
+      left: 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      color: var(--ink-mute);
+    }
+    .figure img {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin-top: 28px;
+      border-radius: 6px;
+      background: #fff;
+    }
+    .figure-cap {
+      margin: 18px 8px 0 8px;
+      font-size: 13.5px;
+      color: var(--ink-soft);
+      line-height: 1.55;
+    }
+    .figure-cap b {
+      color: var(--ink);
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9em;
+      letter-spacing: 0.04em;
+    }
+
+    /* ============== SAMPLES ============== */
+    .sample {
+      padding: 28px 0;
+      border-top: 1px solid var(--line);
+    }
+    .sample:last-child { border-bottom: 1px solid var(--line); }
+
+    .sample-head {
+      display: flex;
+      align-items: baseline;
+      gap: 18px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+    .sample-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      color: var(--accent);
+      flex-shrink: 0;
+      padding: 3px 8px;
+      background: var(--accent-soft);
+      border-radius: 4px;
+    }
+    .sample-text {
+      font-size: 15.5px;
+      line-height: 1.55;
+      color: var(--ink);
+      margin: 0;
+      flex: 1;
+      min-width: 280px;
+      font-weight: 400;
+    }
+    .sample-text::before { content: "\201C "; color: var(--ink-mute); }
+    .sample-text::after  { content: " \201D"; color: var(--ink-mute); }
+
+    .audio-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 760px) {
+      .audio-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 420px) {
+      .audio-grid { grid-template-columns: 1fr; }
+    }
+
+    .audio-cell {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      transition: all 0.18s ease;
+    }
+    .audio-cell:hover {
+      border-color: var(--ink-mute);
+    }
+    .audio-cell.is-ours {
+      border-color: var(--accent);
+      background: linear-gradient(180deg, var(--accent-soft) 0%, #fff 60%);
+    }
+    .audio-head-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .audio-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.005em;
+    }
+    .audio-cell.is-ours .audio-name { color: var(--accent); }
+    .audio-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+      padding: 2px 6px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: #fff;
+    }
+    .audio-cell.is-ours .audio-badge {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: #fff;
+    }
+    .audio-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: var(--ink-mute);
+      margin-bottom: 10px;
+    }
+    .audio-cell audio {
+      width: 100%;
+      height: 32px;
+    }
+
+    /* ============== FOOTER ============== */
+    footer {
+      padding: 48px 0 64px;
+      border-top: 1px solid var(--line);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--ink-mute);
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: var(--max);
+      margin: 0 auto;
+      padding-left: 32px;
+      padding-right: 32px;
+    }
+    footer .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    footer .logo .mark {
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    footer a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+
+    @media (max-width: 540px) {
+      footer { flex-direction: column; gap: 12px; align-items: flex-start; }
+    }
+
+    /* Selection */
+    ::selection { background: var(--ink); color: #fff; }
+
+    /* ============== Animations ============== */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .hero > .container > * {
+      animation: fadeUp 0.6s ease-out both;
+    }
+    .hero > .container > *:nth-child(1) { animation-delay: 0.05s; }
+    .hero > .container > *:nth-child(2) { animation-delay: 0.10s; }
+    .hero > .container > *:nth-child(3) { animation-delay: 0.16s; }
+    .hero > .container > *:nth-child(4) { animation-delay: 0.22s; }
+    .hero > .container > *:nth-child(5) { animation-delay: 0.28s; }
+  </style>
+</head>
+<body>
+
+  <!-- ============ TOP BAR ============ -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><span class="brand-mark"></span><span>BELLE</span></div>
+      <nav class="top-meta">
+        <a href="#abstract">Abstract</a>
+        <a href="#method">Method</a>
+        <a href="#samples">Samples</a>
+        <a href="https://arxiv.org/abs/2510.24372" target="_blank" rel="noopener">Paper ↗</a>
+        <a href="https://github.com/OpenTSLab/BELLE" target="_blank" rel="noopener">Code ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="container">
+      <div class="eyebrow"><span class="dot"></span>Preprint · arXiv:2510.24372</div>
+
+      <h1 class="title">
+        Bayesian evidential learning<br>
+        with language modelling <span class="muted">for speech synthesis.</span>
+      </h1>
+
+      <p class="subtitle">
+        BELLE is a continuous-valued autoregressive TTS model that places a Bayesian prior over the
+        mean and variance of every mel-spectrogram frame and predicts it from the input, so the spread
+        of the speech it generates changes with what is being said.
+      </p>
+
+      <div class="meta-row">
+        <div class="meta-cell">
+          <span class="label">Authors</span>
+          <span class="value">Ziyang Zhang, Yifan Gao, Xuenan Xu, Baoxiang Li, Wen Wu, Chao Zhang</span>
+        </div>
+        <div class="meta-cell">
+          <span class="label">Affiliation</span>
+          <span class="value">Tsinghua University · Shanghai Artificial Intelligence Laboratory</span>
+        </div>
+        <div class="meta-cell">
+          <span class="label">Status</span>
+          <span class="value">Preprint</span>
+        </div>
+        <div class="meta-cell">
+          <span class="label">Year</span>
+          <span class="value">2026</span>
+        </div>
+      </div>
+
+      <div class="links">
+        <a class="btn primary" href="https://github.com/OpenTSLab/BELLE" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0a12 12 0 0 0-3.79 23.4c.6.11.83-.26.83-.58v-2c-3.34.73-4.04-1.6-4.04-1.6-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.21.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .1-.78.42-1.31.76-1.61-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.18 0 0 1.01-.32 3.31 1.23a11.5 11.5 0 0 1 6.02 0c2.3-1.55 3.31-1.23 3.31-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 0z"/></svg>
+          Code
+        </a>
+        <a class="btn" href="https://arxiv.org/abs/2510.24372" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+          Paper
+        </a>
+        <a class="btn" href="#abstract">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+          Abstract
+        </a>
+        <a class="btn" href="#samples">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M11 4v16M15 8v8M19 11v2"/></svg>
+          Samples
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ABSTRACT ============ -->
+  <section class="block" id="abstract">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-num">01 · Abstract</div>
+        <h2 class="section-title">A distribution, not a point.</h2>
+      </div>
+
+      <div class="abstract-grid">
+        <aside class="abstract-side">
+          <div class="kv"><span class="k">PRIOR</span><span class="v">Normal-Inverse-Gamma</span></div>
+          <div class="kv"><span class="k">PARAMS</span><span class="v">γ, ν, α, β</span></div>
+          <div class="kv"><span class="k">CORPORA</span><span class="v">ParallelVox · LS+6TTS</span></div>
+          <div class="kv"><span class="k">REGIME</span><span class="v">One-to-many AR</span></div>
+        </aside>
+
+        <div class="abstract-body">
+          <p>Text-to-speech (TTS) is a <em>one-to-many</em> problem: one text can be spoken in many valid ways, so its realizations form a distribution whose spread depends on the input. Most TTS models do not model this spread explicitly: they leave it implicit in the sampling process or fix it in advance.</p>
+          <p>To model this distribution explicitly, we propose <strong>BELLE</strong> (<strong>B</strong>ayesian <strong>e</strong>vidential <strong>l</strong>earning with <strong>l</strong>anguag<strong>e</strong> modelling), which places a Bayesian prior over the mean and variance of each mel-spectrogram frame and predicts this prior from the input, while keeping the architecture and single-pass sampling of common continuous-valued autoregressive TTS models such as MELLE.</p>
+          <p>Estimating this variance requires several recordings of each text, whereas standard TTS corpora provide one. We therefore construct two parallel-speech corpora: <strong>ParallelVox</strong> from real human recordings and <strong>LS+6TTS</strong>, which adds speech from six pre-trained TTS teachers to LibriSpeech (LS).</p>
+          <p>Trained on these corpora, BELLE outperforms MELLE under the same training conditions, is competitive with larger TTS systems on the objective metrics of LibriSpeech test-clean, and supports streaming generation. Analyses of repeated human readings show that real speech has the properties the Bayesian prior assumes and that the variance predicted by BELLE follows the variation across these readings. Parallel speech improves BELLE, and synthetic parallel speech performs comparably to real parallel speech at the same volume and is far easier to scale.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ METHOD / FIGURE ============ -->
+  <section class="block" id="method">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-num">02 · Method</div>
+        <h2 class="section-title">Model architecture.</h2>
+        <p class="section-sub">Several realizations of each text provide the statistical support for estimating the variance; the Sampling Module predicts the four parameters of a Normal-Inverse-Gamma prior at every frame and samples the frame from it in a single pass.</p>
+      </div>
+
+      <div class="figure" data-fig="FIG.01">
+        <img src="belle.png" alt="BELLE: model architecture and the evidential Sampling Module">
+        <p class="figure-cap"><b>FIG.01</b>&nbsp;&nbsp;Overview of BELLE. Left: the mel-based AR TTS architecture. Right: the Sampling Module, which predicts a Bayesian prior over the mean and variance of each frame from the hidden representation e<sub>t</sub> and samples the frame from it in three steps: an Inverse-Gamma draw of the variance, a Gaussian draw of the mean, and a Gaussian draw of the frame.</p>
+      </div>
+      <div class="figure" data-fig="FIG.02" style="margin-top: 48px;">
+        <img src="belle_stream.png" alt="BELLE-stream: interleaved text and mel-spectrogram chunks" style="max-width: 640px; margin: 28px auto 0;">
+        <p class="figure-cap"><b>FIG.02</b>&nbsp;&nbsp;BELLE-stream interleaves text and mel-spectrogram chunks as the input of the AR model under a causal mask, so speech is generated chunk by chunk while the text is still arriving. It uses the same Sampling Module as BELLE.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SAMPLES ============ -->
+  <section class="block" id="samples">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-num">03 · Samples</div>
+        <h2 class="section-title">Listening comparison.</h2>
+        <p class="section-sub">Three sentences from LibriSpeech test-clean, generated zero-shot from a speech prompt. BELLE and BELLE-stream are compared with MELLE, which samples each frame from a Gaussian whose variance is pulled toward a fixed value, and with the human recording.</p>
+      </div>
+
+      <!-- Sample 1 -->
+      <article class="sample">
+        <header class="sample-head">
+          <span class="sample-id">SMPL · 01</span>
+          <p class="sample-text">when she used to tell me about him i always wondered whether she wasn't a little in love with him</p>
+        </header>
+        <div class="audio-grid">
+          <div class="audio-cell">
+            <div class="audio-head-row"><span class="audio-name">GroundTruth</span><span class="audio-badge">Ref</span></div>
+            <div class="audio-tag">human recording</div>
+            <audio controls preload="none" src="./static/audio_new/groundtruth/237-134500-0022_wav_pg_2.wav"></audio>
+          </div>
+          <div class="audio-cell">
+            <div class="audio-head-row"><span class="audio-name">MELLE</span><span class="audio-badge">Baseline</span></div>
+            <div class="audio-tag">fixed-variance Gaussian AR</div>
+            <audio controls preload="none" src="./static/audio_new/melle/237-134500-0022_wav_pg_2.wav"></audio>
+          </div>
+          <div class="audio-cell is-ours">
+            <div class="audio-head-row"><span class="audio-name">BELLE</span><span class="audio-badge">Ours</span></div>
+            <div class="audio-tag">Bayesian evidential AR</div>
+            <audio controls preload="none" src="./static/audio_new/belle/237-134500-0022_wav_pg_2.wav"></audio>
+          </div>
+          <div class="audio-cell is-ours">
+            <div class="audio-head-row"><span class="audio-name">BELLE-stream</span><span class="audio-badge">Ours</span></div>
+            <div class="audio-tag">streaming variant</div>
+            <audio controls preload="none" src="./static/audio_new/belle_stream/237-134500-0022_wav_pg_2.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <!-- Sample 2 -->
+      <article class="sample">
+        <header class="sample-head">
+          <span class="sample-id">SMPL · 02</span>
+          <p class="sample-text">there was a unanimous groan at this and much reproach after which in his preoccupied way he explained</p>
+        </header>
+        <div class="audio-grid">
+          <div class="audio-cell">
+            <div class="audio-head-row"><span class="audio-name">GroundTruth</span><span class="audio-badge">Ref</span></div>
+            <div class="audio-tag">human recording</div>
+            <audio controls preload="none" src="./static/audio_new/groundtruth/121-127105-0003_wav_pg_0.wav"></audio>
+          </div>
+          <div class="audio-cell">
+            <div class="audio-head-row"><span class="audio-name">MELLE</span><span class="audio-badge">Baseline</span></div>
+            <div class="audio-tag">fixed-variance Gaussian AR</div>
+            <audio controls preload="none" src="./static/audio_new/melle/121-127105-0003_wav_pg_0.wav"></audio>
+          </div>
+          <div class="audio-cell is-ours">
+            <div class="audio-head-row"><span class="audio-name">BELLE</span><span class="audio-badge">Ours</span></div>
+            <div class="audio-tag">Bayesian evidential AR</div>
+            <audio controls preload="none" src="./static/audio_new/belle/121-127105-0003_wav_pg_0.wav"></audio>
+          </div>
+          <div class="audio-cell is-ours">
+            <div class="audio-head-row"><span class="audio-name">BELLE-stream</span><span class="audio-badge">Ours</span></div>
+            <div class="audio-tag">streaming variant</div>
+            <audio controls preload="none" src="./static/audio_new/belle_stream/121-127105-0003_wav_pg_0.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <!-- Sample 3 -->
+      <article class="sample">
+        <header class="sample-head">
+          <span class="sample-id">SMPL · 03</span>
+          <p class="sample-text">we will go out together to the bower there is a way down to the court from my window</p>
+        </header>
+        <div class="audio-grid">
+          <div class="audio-cell">
+            <div class="audio-head-row"><span class="audio-name">GroundTruth</span><span class="audio-badge">Ref</span></div>
+            <div class="audio-tag">human recording</div>
+            <audio controls preload="none" src="./static/audio_new/groundtruth/61-70970-0016_wav_pg_2.wav"></audio>
+          </div>
+          <div class="audio-cell">
+            <div class="audio-head-row"><span class="audio-name">MELLE</span><span class="audio-badge">Baseline</span></div>
+            <div class="audio-tag">fixed-variance Gaussian AR</div>
+            <audio controls preload="none" src="./static/audio_new/melle/61-70970-0016_wav_pg_2.wav"></audio>
+          </div>
+          <div class="audio-cell is-ours">
+            <div class="audio-head-row"><span class="audio-name">BELLE</span><span class="audio-badge">Ours</span></div>
+            <div class="audio-tag">Bayesian evidential AR</div>
+            <audio controls preload="none" src="./static/audio_new/belle/61-70970-0016_wav_pg_2.wav"></audio>
+          </div>
+          <div class="audio-cell is-ours">
+            <div class="audio-head-row"><span class="audio-name">BELLE-stream</span><span class="audio-badge">Ours</span></div>
+            <div class="audio-tag">streaming variant</div>
+            <audio controls preload="none" src="./static/audio_new/belle_stream/61-70970-0016_wav_pg_2.wav"></audio>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <footer>
+    <div class="logo"><span class="mark"></span><span>BELLE / PROJECT PAGE</span></div>
+    <div>Zhang et al. · 2026 · <a href="https://github.com/OpenTSLab/BELLE" target="_blank" rel="noopener">Code</a> · <a href="https://arxiv.org/abs/2510.24372" target="_blank" rel="noopener">arXiv</a></div>
+  </footer>
+
+</body>
+</html>
